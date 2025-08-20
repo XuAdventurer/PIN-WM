@@ -3,7 +3,7 @@
 
 ### [Project Page](https://pinwm.github.io) | [Paper](https://arxiv.org/abs/2504.16693)
 
-#### Wenxuan Li*, Hang Zhao*, Yuqing Lan, Zhiyuan Yu, Yu Du, Qin Zou, Ruizhen Hu†, Kai Xu†
+#### Wenxuan Li*, Hang Zhao*, Zhiyuan Yu, Yu Du, Qin Zou, Ruizhen Hu†, Kai Xu†
 
 \*Equal Contribution, †Corresponding Authors
 
