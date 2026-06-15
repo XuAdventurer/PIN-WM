@@ -4,13 +4,13 @@ import trimesh
 import numpy as np
 import copy
 
-from diff_simulation.physical_material import Physical_Materials
+from diff_simulation.physical_parameters import Physical_Parameters
 
 import pybullet as p
 class Body_Mesh(Body):
 
 
-    def __init__(self,mesh:trimesh.base.Trimesh,physical_materials:Physical_Materials,urdf,
+    def __init__(self,mesh:trimesh.base.Trimesh,physical_parameters:Physical_Parameters,urdf,
                  requires_grad,device,world_position=None,world_rotation=None):
         from utils.mesh_utils import cal_MassProperties,get_ang_inertia,inertia_diagonalize
         volume,_,inertia_body_unit = cal_MassProperties(mesh,device)
@@ -27,7 +27,7 @@ class Body_Mesh(Body):
             
         trimesh_mesh_local = mesh
         
-        super().__init__(None,trimesh_mesh_local,physical_materials,urdf,
+        super().__init__(None,trimesh_mesh_local,physical_parameters,urdf,
                          world_position,world_rotation,device)
 
     def sample_face(self,mesh):

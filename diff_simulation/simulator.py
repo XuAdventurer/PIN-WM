@@ -6,7 +6,7 @@ import numpy as np
 from diff_simulation.solver.lcp_solver import LCP_Solver
 from diff_simulation.body.base import Body
 from diff_simulation.constraints.base import Constraint
-from diff_simulation.physical_material import Physical_Materials
+from diff_simulation.physical_parameters import Physical_Parameters
 
 import pybullet as p
 
@@ -190,9 +190,9 @@ class Simulator(object):
         body = self.get_body(body_id)
         body.change_vel(linear_velocity,angular_velocity)
         
-    def create_mesh_body(self,mesh,physical_materials,urdf,requires_grad,world_position=None,world_rotation=None):
+    def create_mesh_body(self,mesh,physical_parameters,urdf,requires_grad,world_position=None,world_rotation=None):
         from diff_simulation.body.body_mesh import Body_Mesh
-        body = Body_Mesh(mesh,physical_materials,urdf,requires_grad,self.device,world_position,world_rotation)
+        body = Body_Mesh(mesh,physical_parameters,urdf,requires_grad,self.device,world_position,world_rotation)
         body_id = self.add_body(body)
         return body_id
 
@@ -211,31 +211,31 @@ class Simulator(object):
         joint_id = self.add_joint(constraint)
         return joint_id
             
-    def get_body_physical_materials(self,body_id):
+    def get_body_physical_parameters(self,body_id):
         body = self.get_body(body_id)
-        return body.get_physical_materials()
+        return body.get_physical_parameters()
     
-    def get_all_physical_materials(self):
-        all_physical_materials = []
+    def get_all_physical_parameters(self):
+        all_physical_parameters = []
         for body in self.bodies:
-            all_physical_materials.append(body.get_physical_materials())
-        return all_physical_materials
+            all_physical_parameters.append(body.get_physical_parameters())
+        return all_physical_parameters
 
-    def load_all_physical_materials(self,json_path):
+    def load_all_physical_parameters(self,json_path):
         import json
         with open(json_path, 'r') as json_file:
-            all_physical_materials_original_json = json.load(json_file)["activate"]
-        for physical_materials_original in all_physical_materials_original_json:
-            body = self.get_body(physical_materials_original["body_id"])
-            physical_materials = body.physical_materials
-            for key,value in physical_materials_original.items():
-                if key in physical_materials.all:
-                    physical_materials.set_material(key,value)
-            body.set_physical_materials(physical_materials)
+            all_physical_parameters_original_json = json.load(json_file)["activate"]
+        for physical_parameters_original in all_physical_parameters_original_json:
+            body = self.get_body(physical_parameters_original["body_id"])
+            physical_parameters = body.physical_parameters
+            for key,value in physical_parameters_original.items():
+                if key in physical_parameters.all:
+                    physical_parameters.set_material(key,value)
+            body.set_physical_parameters(physical_parameters)
 
-    def set_physical_materials(self,body_id,physical_materials):
+    def set_physical_parameters(self,body_id,physical_parameters):
         body = self.get_body(body_id)
-        return body.set_physical_materials(physical_materials)
+        return body.set_physical_parameters(physical_parameters)
 
     def step(self):
         contact_infos1,vis_contact_points = self.collision_detection_pybullet()

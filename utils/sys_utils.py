@@ -37,32 +37,26 @@ def prepare_output_and_logger(all_args,need_logger = False):
     # Set up output folder
     print("Output folder: {}".format(all_args['sys_args']['output_path']))
     os.makedirs(all_args['sys_args']['output_path'], exist_ok = True)
-    with open(os.path.join(all_args['sys_args']['output_path'], "all_args"), 'w') as args_log_f:
-        args_log_f.write(str((all_args)))
 
     loggers = {}
     if need_logger:
         timestamp = time.time()
         dt_obj = datetime.datetime.fromtimestamp(timestamp)
         formatted_time = dt_obj.strftime("%Y-%m-%d_%H-%M-%S")
-        logs_dir = os.path.join(all_args['sys_args']['output_path'], "logs",formatted_time)
+        log_dir_name = all_args['sys_args'].get("log_dir_name", "physical_parameters")
+        logs_dir = os.path.join(all_args['sys_args']['output_path'], log_dir_name, "logs", formatted_time)
         os.makedirs(logs_dir, exist_ok = True)
+        all_args['sys_args']['log_path'] = logs_dir
         print("log_dir:",logs_dir)
+        with open(os.path.join(logs_dir, "all_args"), 'w') as args_log_f:
+            args_log_f.write(str((all_args)))
 
-        modules_name = ["static","dynamic","policy"]
         format_strings = ["tensorboard"]
-        for module_name in modules_name:
-            os.makedirs(os.path.join(all_args['sys_args']['output_path'], module_name), exist_ok = True)
-            log_module_name_dir = os.path.join(logs_dir, module_name)
-            os.makedirs(log_module_name_dir, exist_ok = True)
-            if module_name == "dynamic":
-                loggers[module_name] = []
-                if "train_num" in all_args['data_args']:
-                    for index in range(all_args['data_args']["train_num"]):
-                        log_sub_dir = os.path.join(log_module_name_dir, str(index))
-                        loggers[module_name].append(configure_logger(log_sub_dir, format_strings))
-            else:
-                loggers[module_name] = configure_logger(log_module_name_dir, format_strings)
+        loggers["dynamic"] = configure_logger(logs_dir, format_strings)
+        loggers["static"] = configure_logger(logs_dir, format_strings)
+    else:
+        with open(os.path.join(all_args['sys_args']['output_path'], "all_args"), 'w') as args_log_f:
+            args_log_f.write(str((all_args)))
 
     return all_args,loggers
 

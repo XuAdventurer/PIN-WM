@@ -17,9 +17,9 @@
 
 ## TODO
 
-- [x] Release the code of world model training.
-- [ ] Release the code of data preparation.
-- [ ] Release the code of policy training.
+- [x] Release the code of data preparation.
+- [x] Release the code of 2dgs training.
+- [x] Release the code of physical parameters identification.
 
 ### Installation
 ```bash
@@ -30,10 +30,22 @@ conda activate pinwm
 ```
 
 
-
-### Training the world model
+### Prepare the data
 ```bash
-python ./scripts/run.py
+python ./scripts/collect_2dgs_data.py
+```
+```bash
+python ./scripts/collect_video_data.py
+```
+
+### Train the 2dgs
+```bash
+python ./scripts/train_2dgs.py
+```
+
+### Identify physical parameters
+```bash
+python ./scripts/identify_physical_parameters.py
 ```
 
 ### Acknowledgement

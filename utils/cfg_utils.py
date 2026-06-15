@@ -33,6 +33,23 @@ class Gaussian_args(NamedTuple):
     checkpoint_iterations : int
     checkpoint : str
 
+def get_latest_2dgs_model_path(output_path):
+    logs_path = os.path.join(output_path, "2dgs", "logs")
+    if not os.path.isdir(logs_path):
+        return os.path.join(output_path, "2dgs")
+
+    candidates = []
+    for name in os.listdir(logs_path):
+        model_path = os.path.join(logs_path, name)
+        point_cloud_path = os.path.join(model_path, "point_cloud")
+        if os.path.isdir(point_cloud_path):
+            candidates.append(model_path)
+
+    if not candidates:
+        return os.path.join(output_path, "2dgs")
+
+    return max(candidates, key=os.path.getmtime)
+
 def get_gaussian_args(data_args,render_args,sys_args):
     # Set up command line argument parser
     parser = ArgumentParser(description="2dgs script parameters")
@@ -59,8 +76,10 @@ def get_gaussian_args(data_args,render_args,sys_args):
     args.test_iterations.append(args.iterations)
     args.test_iterations.append(args.iterations/2)
 
-    if sys_args.output_path != None:
-        args.model_path = os.path.join(sys_args.output_path, "static")
+    if hasattr(sys_args, "model_path") and sys_args.model_path is not None:
+        args.model_path = sys_args.model_path
+    elif sys_args.output_path != None:
+        args.model_path = get_latest_2dgs_model_path(sys_args.output_path)
     
     return Gaussian_args(lp.extract(args), op.extract(args), pp.extract(args), 
                          args.test_iterations, args.save_iterations, 

@@ -14,13 +14,11 @@ from diff_rendering.gaussian_splatting_2d.train_2dgs import train_static_2dgs
 from diff_rendering.gaussian_splatting_2d.utils.system_utils import searchForMaxIteration
 import diff_rendering.gaussian_splatting_2d.gaussian_renderer as Gaussian_Renderer
 
-from diff_simulation.body.body_mesh import Body_Mesh
-from diff_simulation.force.constant_force import Constant_Force
 from diff_simulation.simulator import Simulator
 
 from utils.cfg_utils import get_gaussian_args
+from utils.data_utils import get_2dgs_train_cam_infos,get_gaussian_scene_info
 
-import gym
 
 
 class Builder():
@@ -47,13 +45,22 @@ class Builder():
         gaussians.load_ply(gaussian_path)   
         return gaussians     
 
-    def build_static_2dgs(self):
-        loaded_iter = searchForMaxIteration(os.path.join(self.gaussian_args.dataset.model_path, "point_cloud"))
-        gaussian_path = os.path.join(self.gaussian_args.dataset.model_path,
-                                                "point_cloud",
-                                                "iteration_" + str(loaded_iter),
-                                                "point_cloud.ply")
-        gaussians = self.load_gaussian(gaussian_path)
+    def build_static_2dgs(self,all_train_cam_infos=None,mesh=None,logger=None):
+        point_cloud_path = os.path.join(self.gaussian_args.dataset.model_path, "point_cloud")
+        if not os.path.exists(point_cloud_path):
+            if all_train_cam_infos is None:
+                raise ValueError("all_train_cam_infos is required when training 2DGS from scratch.")
+            os.makedirs(self.gaussian_args.dataset.model_path, exist_ok=True)
+            train_cam_infos = get_2dgs_train_cam_infos(all_train_cam_infos)
+            scene_info = get_gaussian_scene_info(train_cam_infos,self.data_args,self.render_args)
+            gaussians = train_static_2dgs(self.gaussian_args,scene_info,mesh,logger)
+        else:
+            loaded_iter = searchForMaxIteration(point_cloud_path)
+            gaussian_path = os.path.join(self.gaussian_args.dataset.model_path,
+                                                    "point_cloud",
+                                                    "iteration_" + str(loaded_iter),
+                                                    "point_cloud.ply")
+            gaussians = self.load_gaussian(gaussian_path)
         return gaussians
     
     def build_renderer(self):
@@ -64,10 +71,10 @@ class Builder():
 
     def build_optimizer(self,simulator:Simulator):
         l = []
-        all_physical_materials = simulator.get_all_physical_materials()
-        for physical_materials in all_physical_materials:
-            # if physical_materials.requires_grad:
-                for key,value in physical_materials.all.items():
+        all_physical_parameters = simulator.get_all_physical_parameters()
+        for physical_parameters in all_physical_parameters:
+            # if physical_parameters.requires_grad:
+                for key,value in physical_parameters.all.items():
                     if value.requires_grad is not True:
                         continue
 
@@ -79,3 +86,8 @@ class Builder():
                     l.append(l_item)
         optimizer = torch.optim.Adam(l)
         return optimizer
+
+    def build_data_collect_env(self):
+        from envs.data_collect.data_collect_env import Pybullet_Data_Collect_Env
+        env = Pybullet_Data_Collect_Env(self.data_args,self.sim_args)
+        return env

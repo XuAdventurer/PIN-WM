@@ -213,6 +213,19 @@ def quaternion_standardize_np(q):
     return np.where(q[-1] < 0, -q, q)
 
 
+def random_unit_quaternion():
+    # theta = np.random.uniform(-np.pi, np.pi)
+    theta = np.random.uniform(0.0, 0.0)
+    q = np.array([0, 0, np.sin(theta / 2), np.cos(theta / 2)],dtype=np.float32)
+    return quaternion_standardize_np(q)
+
+
+def quaternion2angle(q):
+    x,y,z,w = q
+    angle = 2 * np.arctan2(z, w)
+    return angle.item()
+
+
 def quaternion_multiply_np(q1, q2):
     x1, y1, z1, w1 = q1
     x2, y2, z2, w2 = q2

@@ -3,14 +3,14 @@ import torch
 import copy
 
 from diff_simulation.force.constant_force import Constant_Force
-from diff_simulation.physical_material import Physical_Materials
+from diff_simulation.physical_parameters import Physical_Parameters
 from utils.quaternion_utils import multiply,rotate_point_by_quaternion,quaternion_to_rotmat
 from utils.quaternion_utils import wxyz2xyzw
 
 import pybullet as p
 
 class Body(metaclass=ABCMeta):
-    def __init__(self,collision_geom,visual_geom,physical_materials:Physical_Materials,
+    def __init__(self,collision_geom,visual_geom,physical_parameters:Physical_Parameters,
                  urdf,world_position,world_rotation,device) :
         self.id = None
         self.collision_geom = collision_geom # for ode collision detection
@@ -21,11 +21,11 @@ class Body(metaclass=ABCMeta):
             self.pybullet_geom_id = None
         self.visual_geom = visual_geom
         self.device = device
-        self.physical_materials = physical_materials
-        self.mass = self.physical_materials.get_material("mass")
-        self.friction_coefficient = self.physical_materials.get_material("friction_coefficient")
-        self.restitution = self.physical_materials.get_material("restitution")
-        self.inertia_body = self.physical_materials.get_material("inertia") * self.mass 
+        self.physical_parameters = physical_parameters
+        self.mass = self.physical_parameters.get_material("mass")
+        self.friction_coefficient = self.physical_parameters.get_material("friction_coefficient")
+        self.restitution = self.physical_parameters.get_material("restitution")
+        self.inertia_body = self.physical_parameters.get_material("inertia") * self.mass 
 
         
         self.world_position = world_position
@@ -47,29 +47,29 @@ class Body(metaclass=ABCMeta):
         self.init_world_rotation = self.world_rotation.clone()
         
 
-    def get_physical_materials(self):
-        return self.physical_materials
+    def get_physical_parameters(self):
+        return self.physical_parameters
     
-    def set_physical_materials(self,physical_materials):
-        self.physical_materials = physical_materials
-        self.mass = self.physical_materials.get_material("mass")
-        # self.inertia_body = torch.diag(torch.cat((self.physical_materials.get_material("inertia_x_unit").unsqueeze(0),
-        #                                 self.physical_materials.get_material("inertia_y_unit").unsqueeze(0),
-        #                                 self.physical_materials.get_material("inertia_z_unit").unsqueeze(0)),dim=0)) * self.mass 
-        self.inertia_body = self.physical_materials.get_material("inertia") * self.mass 
+    def set_physical_parameters(self,physical_parameters):
+        self.physical_parameters = physical_parameters
+        self.mass = self.physical_parameters.get_material("mass")
+        # self.inertia_body = torch.diag(torch.cat((self.physical_parameters.get_material("inertia_x_unit").unsqueeze(0),
+        #                                 self.physical_parameters.get_material("inertia_y_unit").unsqueeze(0),
+        #                                 self.physical_parameters.get_material("inertia_z_unit").unsqueeze(0)),dim=0)) * self.mass 
+        self.inertia_body = self.physical_parameters.get_material("inertia") * self.mass 
         # self.inertia_body_inv = 1.0 / self.inertia_body
-        self.friction_coefficient = self.physical_materials.get_material("friction_coefficient")
-        self.restitution = self.physical_materials.get_material("restitution")
+        self.friction_coefficient = self.physical_parameters.get_material("friction_coefficient")
+        self.restitution = self.physical_parameters.get_material("restitution")
 
     def set_id(self,id):
         self.id = id
-        self.physical_materials.body_id = self.id
+        self.physical_parameters.body_id = self.id
         
     def reset(self):
-        self.mass = self.physical_materials.get_material("mass")
-        self.friction_coefficient = self.physical_materials.get_material("friction_coefficient")
-        self.restitution = self.physical_materials.get_material("restitution")        
-        self.inertia_body = self.physical_materials.get_material("inertia") * self.mass 
+        self.mass = self.physical_parameters.get_material("mass")
+        self.friction_coefficient = self.physical_parameters.get_material("friction_coefficient")
+        self.restitution = self.physical_parameters.get_material("restitution")        
+        self.inertia_body = self.physical_parameters.get_material("inertia") * self.mass 
 
         self.world_position = self.init_world_position.clone()
         self.world_rotation = self.init_world_rotation.clone()
