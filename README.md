@@ -26,7 +26,7 @@
 git clone https://github.com/XuAdventurer/PIN-WM.git
 cd PIN-WM
 conda env create -f environment.yaml
-conda activate pinwm
+conda activate pin_wm
 ```
 
 
